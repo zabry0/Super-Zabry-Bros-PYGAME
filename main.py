@@ -4,7 +4,7 @@ import sys
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Super Zabry Bros - 5 úrovní")
+pygame.display.set_caption("Super Zabry Bros - 7 úrovní")
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -23,6 +23,7 @@ def load_image(path, scale=None):
 
 background1 = load_image("background.png", (WIDTH, HEIGHT))
 background2 = load_image("background2.png", (WIDTH, HEIGHT))
+background3 = load_image("background3.png", (WIDTH, HEIGHT))
 player_img = load_image("player.png", (64, 64))
 enemy_img = load_image("enemy.png", (64, 64))
 platform_img = load_image("platform.png", (128, 32))
@@ -112,7 +113,7 @@ class Enemy:
         else:
             pygame.draw.rect(surface, (255, 0, 0), self.rect)
 
-# Přidáno celkem 5 levelů:
+# Celkem 7 levelů, poslední dva jsou těžké s background3.png
 levels = [
     # Level 1 - background1
     {
@@ -199,6 +200,42 @@ levels = [
             (710, HEIGHT - 350),
             (610, HEIGHT - 170)
         ]
+    },
+    # Level 6 - HARD - background3
+    {
+        "background": background3,
+        "platforms": [
+            (0, HEIGHT - 40),
+            (250, HEIGHT - 220),
+            (500, HEIGHT - 280),
+            (650, HEIGHT - 320),
+            (750, HEIGHT - 150),
+            (400, HEIGHT - 110)
+        ],
+        "enemies": [
+            (260, HEIGHT - 260),
+            (510, HEIGHT - 320),
+            (660, HEIGHT - 360),
+            (760, HEIGHT - 190)
+        ]
+    },
+    # Level 7 - HARD - background3
+    {
+        "background": background3,
+        "platforms": [
+            (0, HEIGHT - 40),
+            (150, HEIGHT - 230),
+            (350, HEIGHT - 280),
+            (550, HEIGHT - 320),
+            (700, HEIGHT - 180),
+            (400, HEIGHT - 140)
+        ],
+        "enemies": [
+            (160, HEIGHT - 270),
+            (360, HEIGHT - 320),
+            (560, HEIGHT - 360),
+            (710, HEIGHT - 220)
+        ]
     }
 ]
 
@@ -223,6 +260,9 @@ def main():
     victory = False
     paused = False
     screen_state = "intro"
+    show_hard_message = False
+    hard_message_timer = 0
+    HARD_MESSAGE_DURATION = 180  # frames (~3 seconds)
 
     while True:
         clock.tick(FPS)
@@ -250,6 +290,8 @@ def main():
                     victory = False
                     paused = False
                     screen_state = "game"
+                    show_hard_message = False
+                    hard_message_timer = 0
 
         if screen_state == "intro":
             screen.fill((0, 0, 50))
@@ -290,9 +332,13 @@ def main():
                     else:
                         platforms, enemies, current_background = load_level(levels[current_level])
                         player.rect.topleft = (50, HEIGHT - 150)
+                        # Po dosažení levelu 6 a 7 zobraz zprávu HARD
+                        if current_level == 5 or current_level == 6:
+                            show_hard_message = True
+                            hard_message_timer = HARD_MESSAGE_DURATION
 
                 if player.rect.top > HEIGHT:
-                    player.lives -= 1
+                    player.lives -= 3
                     if player.lives <= 0:
                         game_over = True
                     else:
@@ -322,6 +368,12 @@ def main():
 
             if victory:
                 draw_text_with_bg(screen, "VYHRÁL JSI! Stiskni R pro restart", font, (50, 255, 50), HEIGHT // 2 - 50)
+
+            if show_hard_message:
+                draw_text_with_bg(screen, "HARD ÚROVEŇ!", font, (255, 100, 0), HEIGHT // 4)
+                hard_message_timer -= 1
+                if hard_message_timer <= 0:
+                    show_hard_message = False
 
             pygame.display.flip()
 
